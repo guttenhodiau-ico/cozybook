@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Уютная книга — книжный магазин</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
+        
+        body { 
+            font-family: 'Inter', system_ui, sans-serif; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #f9f5f0;
+        }
+        main { flex: 1; }
+
+        .book-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .book-card:hover { transform: translateY(-12px); box-shadow: 0 25px 35px -10px rgba(216, 129, 52, 0.2); }
+
+        .accent { color: #d88134; }
+        .accent-bg { background-color: #d88134; }
+        .category-item.active { background-color: #d88134; color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="bg-white border-b sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-[#f5e8e0] py-3 text-sm">
+                <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+                    <span>г. Орёл, ул. Автовокзальная 25</span>
+                    <div class="flex items-center gap-8">
+                        <a href="#" onclick="navigateTo('help')" class="hover:text-[#d88134]">Помощь</a>
+                        <a href="#" class="hover:text-[#d88134]">+7 (999) 123-45-67</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-5 flex items-center justify-between">
+                <div onclick="navigateTo('home'); window.scrollTo({top: 0, behavior: 'smooth'});" class="cursor-pointer">
+                    <img src="logo cb big.png" alt="Уютная книга" class="h-24 w-auto">
+                </div>
+
+                <button onclick="navigateTo('catalog'); window.scrollTo({top: 0, behavior: 'smooth'});" 
+                        class="accent-bg text-white px-8 py-4 rounded-3xl flex items-center gap-3 font-medium">
+                    <i class="fas fa-bars"></i>
+                    <span>Каталог</span>
+                </button>
+
+                <div class="flex-1 max-w-2xl mx-10">
+                    <input id="search-input" type="text" placeholder="Поиск книг, авторов..." 
+                           class="w-full border border-gray-200 focus:border-[#d88134] rounded-full py-4 px-8 outline-none"
+                           onkeyup="if(event.key === 'Enter') performSearch()">
+                </div>
+
+                <button onclick="navigateTo('cart')" class="relative text-3xl hover:text-[#d88134]">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto w-full">
+
+        <!-- HOME PAGE -->
+        <div id="home-page">
+            <div class="mx-6 mt-8 rounded-3xl h-[480px] overflow-hidden relative">
+                <img src="https://picsum.photos/id/1015/1400/700" class="w-full h-full object-cover" alt="">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                <div class="absolute bottom-16 left-16 text-white">
+                    <h1 class="text-6xl font-bold">Книги, которые согревают душу</h1>
+                    <button onclick="navigateTo('catalog')" class="mt-8 accent-bg px-10 py-5 rounded-3xl text-lg">Перейти в каталог</button>
+                </div>
+            </div>
+
+            <div class="px-6 py-12">
+                <h2 class="text-4xl font-semibold mb-8 accent">Новинки</h2>
+                <div id="new-books" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6"></div>
+            </div>
+
+            <div class="px-6 py-12 bg-white">
+                <h2 class="text-4xl font-semibold mb-8 accent">Бестселлеры</h2>
+                <div id="bestseller-books" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6"></div>
+            </div>
+
+            <div class="px-6 py-12">
+                <h2 class="text-4xl font-semibold mb-8 text-orange-600">Акции</h2>
+                <div id="sale-books" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6"></div>
+            </div>
+        </div>
+
+        <!-- CATALOG PAGE -->
+        <div id="catalog-page" class="hidden">
+            <div class="flex">
+                <div class="w-72 bg-white border-r p-8">
+                    <h3 class="font-semibold mb-6 text-2xl">Категории</h3>
+                    <div class="space-y-3">
+                        <div onclick="filterCategory(this, 'all')" class="category-item px-5 py-4 rounded-2xl cursor-pointer active">Все книги</div>
+                        <div onclick="filterCategory(this, 'fiction')" class="category-item px-5 py-4 rounded-2xl cursor-pointer">Художественная литература</div>
+                        <div onclick="filterCategory(this, 'nonfiction')" class="category-item px-5 py-4 rounded-2xl cursor-pointer">Нон-фикшн</div>
+                        <div onclick="filterCategory(this, 'fantasy')" class="category-item px-5 py-4 rounded-2xl cursor-pointer">Фантастика</div>
+                    </div>
+                </div>
+                <div class="flex-1 p-8">
+                    <h2 class="text-4xl font-semibold mb-10">Каталог товаров</h2>
+                    <div id="catalog-books" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CART PAGE -->
+        <div id="cart-page" class="hidden p-8">
+            <h1 class="text-4xl font-semibold mb-8">Корзина</h1>
+            <div id="cart-items" class="space-y-6 mb-12"></div>
+            
+            <div class="bg-white rounded-3xl p-8 max-w-lg ml-auto">
+                <div class="flex justify-between text-2xl font-semibold mb-6">
+                    <span>Итого:</span>
+                    <span id="cart-total" class="accent">0 ₽</span>
+                </div>
+                <button onclick="goToCheckout()" class="w-full accent-bg text-white py-6 rounded-3xl text-xl font-medium">
+                    Оформить заказ
+                </button>
+            </div>
+        </div>
+
+        <!-- CHECKOUT PAGE -->
+        <div id="checkout-page" class="hidden p-8 max-w-5xl mx-auto">
+            <h1 class="text-4xl font-semibold mb-10">Оформление заказа</h1>
+            <div class="grid grid-cols-5 gap-10">
+                <div class="col-span-3 space-y-8">
+                    <!-- Способ получения -->
+                    <div class="bg-white rounded-3xl p-8">
+                        <h3 class="font-semibold mb-6 text-xl">Способ получения</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="selectOption(this)" class="delivery-btn active border-2 border-[#d88134] rounded-2xl p-4">Самовывоз</button>
+                            <button onclick="selectOption(this)" class="delivery-btn border border-gray-200 rounded-2xl p-4">Курьером</button>
+                            <button onclick="selectOption(this)" class="delivery-btn border border-gray-200 rounded-2xl p-4">В пункте выдачи</button>
+                            <button onclick="selectOption(this)" class="delivery-btn border border-gray-200 rounded-2xl p-4">Почтой России</button>
+                        </div>
+                    </div>
+
+                    <!-- Способ оплаты -->
+                    <div class="bg-white rounded-3xl p-8">
+                        <h3 class="font-semibold mb-6 text-xl">Способ оплаты</h3>
+                        <div class="space-y-3" id="payment-options">
+                            <label class="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer">
+                                <input type="radio" name="payment" value="card" onchange="toggleCardFields()" checked class="accent">
+                                <span>Картой на сайте</span>
+                            </label>
+                            <label class="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer">
+                                <input type="radio" name="payment" value="sbp" onchange="toggleCardFields()" class="accent">
+                                <span>Переводом СБП</span>
+                            </label>
+                            <label class="flex items-center gap-4 border border-gray-200 rounded-2xl p-5 cursor-pointer">
+                                <input type="radio" name="payment" value="cash" onchange="toggleCardFields()" class="accent">
+                                <span>При получении</span>
+                            </label>
+                        </div>
+                        <div id="card-fields" class="mt-6 space-y-4 hidden">
+                            <input type="text" placeholder="Номер карты (0000 0000 0000 0000)" class="w-full border border-gray-300 rounded-2xl px-6 py-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" placeholder="ММ/ГГ" class="border border-gray-300 rounded-2xl px-6 py-4">
+                                <input type="text" placeholder="CVV/CVC" class="border border-gray-300 rounded-2xl px-6 py-4">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Получатель -->
+                    <div class="bg-white rounded-3xl p-8">
+                        <h3 class="font-semibold mb-6 text-xl">Получатель</h3>
+                        <div class="space-y-6">
+                            <input type="text" value="Иван Иванов" class="w-full border border-gray-300 rounded-2xl px-6 py-4">
+                            <div class="grid grid-cols-2 gap-6">
+                                <input type="tel" value="+7 999 123-45-67" class="border border-gray-300 rounded-2xl px-6 py-4">
+                                <input type="email" value="example@mail.ru" class="border border-gray-300 rounded-2xl px-6 py-4">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-2">
+                    <div class="bg-white rounded-3xl p-8 sticky top-8">
+                        <h3 class="font-semibold mb-6">Ваш заказ</h3>
+                        <div id="checkout-items" class="space-y-4"></div>
+                        <div class="border-t pt-6 mt-8">
+                            <div class="flex justify-between text-2xl font-semibold">
+                                <span>Итого</span>
+                                <span id="checkout-total" class="accent">0 ₽</span>
+                            </div>
+                        </div>
+                        <button onclick="completeOrder()" class="mt-10 w-full accent-bg text-white py-6 rounded-3xl text-xl font-medium">
+                            Подтвердить заказ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HELP PAGE -->
+        <div id="help-page" class="hidden p-8 max-w-4xl mx-auto">
+            <h1 class="text-4xl font-semibold mb-10">Помощь и частые вопросы</h1>
+            <div class="bg-white rounded-3xl p-12 space-y-10 text-lg">
+                <div>
+                    <h2 class="font-semibold text-2xl mb-6">Контакты магазина</h2>
+                    <p><strong>Адрес:</strong> г. Орёл, ул. Автовокзальная 25</p>
+                    <p><strong>Телефон:</strong> +7 (999) 123-45-67</p>
+                    <p><strong>VK:</strong> <a href="https://vk.com/dyaGADkin" target="_blank" class="accent underline">vk.com/dyaGADkin</a></p>
+                </div>
+                <div>
+                    <h2 class="font-semibold text-2xl mb-4">Как оформить заказ?</h2>
+                    <p>Добавьте нужные книги в корзину и нажмите кнопку «Оформить заказ».</p>
+                </div>
+                <div>
+                    <h2 class="font-semibold text-2xl mb-4">Сроки доставки</h2>
+                    <p>Самовывоз — в день заказа<br>Курьер — 1–2 дня<br>Почта России — 3–7 дней</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-[#2c2118] text-[#e8d9c8] mt-auto py-12">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div>
+                <img src="logo cb big bot.png" alt="Уютная книга" class="h-16 mb-4">
+            </div>
+            <div>
+                <h4 class="text-white mb-4">Магазин</h4>
+                <p onclick="navigateTo('home'); window.scrollTo({top: 0, behavior: 'smooth'});" class="cursor-pointer hover:text-white">Главная</p>
+                <p onclick="navigateTo('catalog'); window.scrollTo({top: 0, behavior: 'smooth'});" class="cursor-pointer hover:text-white">Каталог</p>
+            </div>
+            <div>
+                <h4 class="text-white mb-4">Помощь</h4>
+                <p onclick="navigateTo('help'); window.scrollTo({top: 0, behavior: 'smooth'});" class="cursor-pointer hover:text-white">Часто задаваемые вопросы</p>
+            </div>
+            <div>
+                <h4 class="text-white mb-4">Контакты</h4>
+                <p>г. Орёл, ул. Автовокзальная 25</p>
+                <p>+7 (999) 123-45-67</p>
+                <p><a href="https://vk.com/yGADkin" target="_blank" class="hover:text-white">vk.com/yGADkin</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let books = [
+            { id: 1, title: "Тени прошлого", author: "Анна Смирнова", price: 890, category: "fiction", img: "https://picsum.photos/id/1015/300/400" },
+            { id: 2, title: "Код да Винчи", author: "Дэн Браун", price: 750, category: "fiction", img: "https://picsum.photos/id/201/300/400" },
+            { id: 3, title: "Атомные привычки", author: "Джеймс Клир", price: 650, category: "nonfiction", img: "https://picsum.photos/id/237/300/400" },
+            { id: 4, title: "Дюна", author: "Фрэнк Герберт", price: 1200, category: "fantasy", img: "https://picsum.photos/id/180/300/400" },
+            { id: 5, title: "Маленький принц", author: "Антуан де Сент-Экзюпери", price: 450, category: "fiction", img: "https://picsum.photos/id/251/300/400" },
+            { id: 6, title: "1984", author: "Джордж Оруэлл", price: 680, category: "fiction", img: "https://picsum.photos/id/133/300/400" }
+        ];
+
+        let cart = [];
+
+        function renderBooks(containerId, bookList) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            bookList.forEach(book => {
+                container.innerHTML += `
+                    <div class="book-card bg-white rounded-3xl overflow-hidden">
+                        <img src="${book.img}" class="w-full h-64 object-cover">
+                        <div class="p-5">
+                            <div class="font-medium">${book.title}</div>
+                            <div class="text-sm text-gray-500">${book.author}</div>
+                            <div class="flex justify-between items-center mt-4">
+                                <span class="text-xl font-semibold">${book.price} ₽</span>
+                                <button onclick="addToCart(${book.id}); event.stopImmediatePropagation()" 
+                                        class="accent-bg text-white px-5 py-2 rounded-2xl text-sm">В корзину</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function addToCart(id) {
+            const book = books.find(b => b.id === id);
+            const existing = cart.find(i => i.id === id);
+            if (existing) existing.quantity = (existing.quantity || 1) + 1;
+            else cart.push({...book, quantity: 1});
+            updateCartCount();
+        }
+
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            document.getElementById('cart-count').textContent = count;
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            container.innerHTML = '';
+            let total = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = `<p class="text-center py-20 text-gray-400 text-xl">Корзина пуста</p>`;
+                document.getElementById('cart-total').textContent = '0 ₽';
+                return;
+            }
+
+            cart.forEach((item, index) => {
+                const itemTotal = item.price * (item.quantity || 1);
+                total += itemTotal;
+                container.innerHTML += `
+                    <div class="flex gap-6 bg-white p-6 rounded-3xl">
+                        <img src="${item.img}" class="w-24 h-32 object-cover rounded-2xl">
+                        <div class="flex-1">
+                            <div class="font-medium">${item.title}</div>
+                            <div class="text-gray-500">${item.author}</div>
+                            <div class="flex justify-between items-center mt-6">
+                                <div class="flex border rounded-2xl">
+                                    <button onclick="changeQty(${index}, -1)" class="px-4">-</button>
+                                    <span class="px-6">${item.quantity || 1}</span>
+                                    <button onclick="changeQty(${index}, 1)" class="px-4">+</button>
+                                </div>
+                                <div class="font-semibold">${itemTotal} ₽</div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('cart-total').textContent = total + ' ₽';
+        }
+
+        function changeQty(index, delta) {
+            cart[index].quantity = Math.max(1, (cart[index].quantity || 1) + delta);
+            renderCart();
+            updateCartCount();
+        }
+
+        function goToCheckout() {
+            if (cart.length === 0) return alert("Корзина пуста");
+            navigateTo('checkout');
+            renderCheckout();
+        }
+
+        function renderCheckout() {
+            const container = document.getElementById('checkout-items');
+            container.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                const sum = item.price * (item.quantity || 1);
+                total += sum;
+                container.innerHTML += `<div class="flex justify-between py-1"><span>${item.title} × ${item.quantity || 1}</span><span>${sum} ₽</span></div>`;
+            });
+            document.getElementById('checkout-total').textContent = total + ' ₽';
+        }
+
+        function toggleCardFields() {
+            const cardFields = document.getElementById('card-fields');
+            const selected = document.querySelector('input[name="payment"]:checked').value;
+            cardFields.classList.toggle('hidden', selected !== 'card');
+        }
+
+        function completeOrder() {
+            alert('✅ Заказ успешно оформлен! Спасибо за покупку в «Уютной книге»!');
+            cart = [];
+            updateCartCount();
+            navigateTo('home');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function selectOption(btn) {
+            const parent = btn.parentElement;
+            parent.querySelectorAll('button').forEach(b => b.classList.remove('active', 'border-[#d88134]'));
+            btn.classList.add('active', 'border-[#d88134]');
+        }
+
+        function filterCategory(el, category) {
+            document.querySelectorAll('.category-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+            const filtered = category === 'all' ? books : books.filter(b => b.category === category);
+            renderBooks('catalog-books', filtered);
+        }
+
+        function performSearch() {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            const filtered = books.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q));
+            navigateTo('catalog');
+            renderBooks('catalog-books', filtered.length ? filtered : books);
+        }
+
+        function navigateTo(page) {
+            document.querySelectorAll('#home-page, #catalog-page, #cart-page, #checkout-page, #help-page').forEach(el => el.classList.add('hidden'));
+            document.getElementById(page + '-page').classList.remove('hidden');
+            
+            if (page === 'catalog') renderBooks('catalog-books', books);
+            if (page === 'cart') renderCart();
+            if (page === 'checkout') renderCheckout();
+        }
+
+        window.onload = () => {
+            renderBooks('new-books', books);
+            renderBooks('bestseller-books', books.slice(1));
+            renderBooks('sale-books', books.slice(2));
+            updateCartCount();
+            toggleCardFields();
+        };
+    </script>
+</body>
+</html>
